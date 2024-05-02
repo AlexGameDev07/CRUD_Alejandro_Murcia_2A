@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CRUD_Alejandro_Murcia_2A</string>
+    <string name="nombre_producto">Nombre Producto</string>
+    <string name="precio">Precio</string>
+    <string name="cantidad">Cantidad</string>
+    <string name="agregar">Agregar</string>
 </resources>
