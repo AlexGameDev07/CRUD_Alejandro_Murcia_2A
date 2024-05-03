@@ -1,5 +1,6 @@
 package alejandro.murcia.crud_alejandro_murcia_2a
 
+import RecyclerViewHelper.Adaptador
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -7,10 +8,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import modelo.ClaseConexion
+import modelo.DataClassProductos
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +53,41 @@ class MainActivity : AppCompatActivity() {
                 addProducto.setInt(2, txtPrecio.text.toString().toInt())
                 addProducto.setInt(3,txtCantidad.text.toString().toInt())
                 addProducto.executeUpdate()
+            }
+        }
+
+    /***** -Agregar item card- ***********************************************************************************/
+
+        val rcvProductos = findViewById<RecyclerView>(R.id.rcvProductos)
+
+        //Asignar un layout al RecyclerView
+
+        rcvProductos.layoutManager = LinearLayoutManager(this)
+
+        //Funcion para obtener datos
+        fun ObtenerDatos():List<DataClassProductos>{
+            val objConexion = ClaseConexion().cadenaConexion()
+
+            val Statement = objConexion?.createStatement()
+            val resultSet = Statement?.executeQuery("SELECT * FROM TB_PRODUCTOS")!!
+
+            val productos = mutableListOf<DataClassProductos>()
+            while (resultSet.next()){
+                val nombre = resultSet.getString("nombreProducto")
+                val producto = DataClassProductos(nombre)
+                productos.add(producto)
+            }
+
+            return productos
+
+        }
+
+        //Asignar un adaptador
+        CoroutineScope(Dispatchers.IO).launch {
+            val productosDB = ObtenerDatos()
+            withContext(Dispatchers.Main){
+                val myAdapter = Adaptador(productosDB)
+                rcvProductos.adapter = myAdapter
             }
         }
     }
