@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import modelo.ClaseConexion
 import modelo.DataClassProductos
+import kotlin.jvm.internal.AdaptedFunctionReference
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,27 +37,14 @@ class MainActivity : AppCompatActivity() {
         val btnAgregar = findViewById<Button>(R.id.btnAgregar)
 
 
-        //2- Programar el boton
-        btnAgregar.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO){
-                //Hola profe :D
-                //1- Crear un objeto de la clase conexion
-                val claseConexion = ClaseConexion().cadenaConexion()
 
-                //2-creo una variable que contenga un PreparedStatement
-                val addProducto = claseConexion?.prepareStatement("INSERT INTO TB_PRODUCTOS(" +
-                        "nombreProducto, " +
-                        "precio, " +
-                        "cantidad) " +
-                        "VALUES(?,?,?)")!!
-                addProducto.setString(1, txtNombre.text.toString())
-                addProducto.setInt(2, txtPrecio.text.toString().toInt())
-                addProducto.setInt(3,txtCantidad.text.toString().toInt())
-                addProducto.executeUpdate()
-            }
+        fun Limpiar(){
+            txtPrecio.setText("")
+            txtNombre.setText("")
+            txtCantidad.setText("")
         }
 
-    /***** -Agregar item card- ***********************************************************************************/
+        /***** -Mostrar Datos- ***********************************************************************************/
 
         val rcvProductos = findViewById<RecyclerView>(R.id.rcvProductos)
 
@@ -90,5 +78,39 @@ class MainActivity : AppCompatActivity() {
                 rcvProductos.adapter = myAdapter
             }
         }
+
+    /***** -Guardar Datos- ***************************************************************************************/
+
+
+        //2- Programar el boton
+        btnAgregar.setOnClickListener {
+            //Esto es una corrutina
+            GlobalScope.launch(Dispatchers.IO){
+                //Hola profe :D
+                //1- Crear un objeto de la clase conexion
+                val claseConexion = ClaseConexion().cadenaConexion()
+
+                //2-creo una variable que contenga un PreparedStatement
+                val addProducto = claseConexion?.prepareStatement("INSERT INTO TB_PRODUCTOS(" +
+                        "nombreProducto, " +
+                        "precio, " +
+                        "cantidad) " +
+                        "VALUES(?,?,?)")!!
+                addProducto.setString(1, txtNombre.text.toString())
+                addProducto.setInt(2, txtPrecio.text.toString().toInt())
+                addProducto.setInt(3,txtCantidad.text.toString().toInt())
+                addProducto.executeUpdate()
+
+                val nuevosProductos = ObtenerDatos()
+                withContext(Dispatchers.Main){
+                    (rcvProductos.adapter as? Adaptador)?.ActualizarLista(nuevosProductos)
+                }
+
+
+            }
+            //Limpiar()
+        }
+
+
     }
 }
